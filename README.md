@@ -15,9 +15,9 @@ I personally use my own version of this in my house but if you want to test out 
 
 This is completely public and open. Feel free to try it out!
 
-Check out the steps below on how to add it to your homescreen (for iOS users) and try it that out too. 
+There are steps below on how to add it to your homescreen (for iOS users), so feel free to try that out too. 
 
-It gives a different experience to the website, without the tabs or urls, becoming its own mobile app. 
+It gives a different experience to the website, without the tabs or url section, becoming its own mobile app. 
 
 As always, let me know any feedback you have. 
 
