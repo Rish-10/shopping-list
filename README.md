@@ -4,6 +4,9 @@ Hi,
 
 This is a mobile web-app I built, although it can be used entirely as a website too. 
 
+Feel free to check out the code in this repo. Here is a more detailed description & instructions if you want to try a deployed version:
+
+
 It is a completely functional shopping list that uses a database to store the items, which allows it to sync across multiple devices. 
 
 That makes it perfect to share in households; you can add a food item when it runs out and also now have a place when you're asked to add something to the shopping list. 
