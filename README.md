@@ -25,4 +25,4 @@ Enjoy!
 
 P.S. To add it as an app on an iPhone, open the website on the phone, press share, then add to home screen. Don't forget to change the name to something like "Shopping List" so it's not empty. For android users, you'll have to search how to add a website to your home screen. 
 
-P.P.S. If you do want to continue to use this an app, contact me privately to help you set it up with your own database. If you use this specific site, items can get added and deleted by other people testing it out.
+P.P.S. If you use this site, items can get added and deleted by other people testing it out.
