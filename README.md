@@ -11,7 +11,7 @@ It is a completely functional shopping list that uses a database to store the it
 
 That makes it perfect to share in households; you can add a food item when it runs out and also now have a place when you're asked to add something to the shopping list. 
 
-I personally use my own version of this in my house but if you want to test out a public one I made, you can do so here: https://rishishoppingpublic.netlify.app
+I personally use my own version of this in my house but if you want to test out a public one I made, you can do so here: https://rishishoppingpublic.netlify.app (FYI double to delete an item)
 
 This is completely public and open. Feel free to try it out!
 
