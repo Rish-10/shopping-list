@@ -7,7 +7,7 @@ const appSettings = {
 
 const app = initializeApp(appSettings)
 const database = getDatabase(app)
-const shoppingListInDB = ref(database, "shoppingList")
+const shoppingListInDB = ref(database, "publicShoppingList")
 
 const addButtonEl = document.getElementById("add-button")
 const inputFieldEl = document.getElementById("input-field")
@@ -57,7 +57,7 @@ function appendItemToShoppingListEl(input) {
     shoppingListEl.append(newEl)
 
     newEl.addEventListener("dblclick", function() {
-        let exactLocationOfItemInDB = ref(database, `shoppingList/${itemID}`)
+        let exactLocationOfItemInDB = ref(database, `publicShoppingList/${itemID}`)
 
         remove(exactLocationOfItemInDB)
     })
