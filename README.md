@@ -2,7 +2,7 @@
 
 Hi, 
 
-This is a mobile web-app I built as part of a Frontend Developer Course. It can be used entirely as a website too. 
+This is a mobile web-app I built, although it can be used entirely as a website too. 
 
 It is a completely functional shopping list that uses a database to store the items, which allows it to sync across multiple devices. 
 
