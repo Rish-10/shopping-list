@@ -20,6 +20,8 @@ addButtonEl.addEventListener("click", function() {
     push(shoppingListInDB, inputValue)
 
     clearInputFieldEl()
+
+    inputFieldEl.focus()
 })
 
 inputFieldEl.addEventListener("keydown", function(e) {
@@ -68,3 +70,40 @@ function appendItemToShoppingListEl(input) {
         remove(exactLocationOfItemInDB)
     })
 }
+
+
+
+let infoImg = document.querySelector("#info-img")
+let subMainSection = document.querySelector("#main-section")
+let infoSection = document.querySelector("#info-section")
+let infoSectionToggle = 0 
+
+let catImg = document.querySelector("#cat-img")
+let inputField = document.querySelector("#input-field")
+let addBtn = document.querySelector("#add-button")
+let shopList = document.querySelector("#shopping-list")
+
+infoImg.addEventListener("click", function() {
+    if (infoSectionToggle % 2 === 0) {
+        subMainSection.className = "disappear"
+
+        catImg.className = "disappear"
+        inputField.className = "disappear"
+        addBtn.className = "disappear"
+        shopList.className = "disappear"
+
+        infoSection.className = ""
+        infoSectionToggle += 1
+    } else {
+        subMainSection.className = ""
+
+        catImg.className = ""
+        inputField.className = ""
+        addBtn.className = ""
+        shopList.className = ""
+
+        infoSection.className = "disappear"
+        infoSectionToggle += 1
+    }
+})
+
