@@ -65,6 +65,8 @@ function appendItemToShoppingListEl(input) {
     shoppingListEl.append(newEl)
 
     newEl.addEventListener("dblclick", function() {
+        navigator.clipboard.writeText(itemValue)
+
         let exactLocationOfItemInDB = ref(database, `publicShoppingList/${itemID}`)
 
         remove(exactLocationOfItemInDB)
