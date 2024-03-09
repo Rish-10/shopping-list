@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Shopping List</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="index.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+        <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+        <link rel="manifest" href="favicon_io/site.webmanifest">
+    </head>
+    <body>
+
+        <div id="container">
+            <img id="info-img" src="info.png">
+
+            <div id="main-section">
+                <img id="cat-img" src="images/cat.png"> 
+                <input type="text" id="input-field" placeholder="Bread"> 
+                <button id="add-button">Add to cart</button>
+                <ul id="shopping-list"></ul>
+            </div>
+
+        
+
+            <div class="disappear" id="info-section">
+                <div class="info-section-section">
+                    <h2 class="big-title">Welcome to the public shopping list!</h2>
+                </div>
+
+                <div class="info-section-section">
+                    <h2 class="big-title">Please note any changes / additions you make here can also be altered by other users</h2>
+                </div>
+                
+                <div class="info-section-section">
+                    <h2 class="big-title">How to setup as an app</h2>
+                    <p class="indent">iOS: Press share, then scroll down and press add to home screen</p>
+                    <p class="indent">NB. It won't show up in the App Library, however, it will show up if you pull down and search for it</p>
+                    <p class="indent">Android: Press the three dots in the top right corner (menu button), and press add to home screen</p>
+                </div>
+
+                <div class="info-section-section">
+                    <h2 class="big-title">How to use</h2>
+                    <p class="indent">To add an item, type it in, and either press 'enter' on the keyboard or the 'add to cart' button to add to the list</p>
+                    <p class="indent">To delete an item, double tap it</p>
+                    <p class="indent">After you delete an item, it will be copied on your device, so if you accidentally delete or want to edit what's written, you have the option to paste it and re-enter it if you wish</p>
+                    <p class="indent">Please note that this app does require an internet connection - check below for how you can use it without</p>
+                </div>
+
+                <div class="info-section-section">
+                    <h2 class="big-title">About</h2>
+                    <p class="indent">Please note this is a web-app; it is similar but is not the same as a native app like WhatsApp or Instagram, where you download the software on your device</p>
+                    <p class="indent">It is a website that acts and behaves as an app on your device when you add it to the home screen</p>
+                    <p class="indent">This means that it will behave as a regular app, that requires an internet connection, but it will take hardly any space on your device's storage</p>
+                    <p class="indent">On average, it takes around 1/1,000,000 of the storage that Instagram uses</p>
+                    <p class="indent">However, this does mean that if you share the URL of the website, anyone who has that link will be able to access your list</p>
+                </div>
+
+                <div class="info-section-section">
+                    <h2 class="big-title">No internet?</h2>
+                    <p class="indent">If you are going to a shop where you know you will not have an internet connection, open the app in an area with connection beforehand, and leave it running in the background</p>
+                    <p class="indent">You will be able to view the list and also delete items locally, so you can tick off items as you shop, however when you reconnect to the internet and reload the app, the items will still be there as they cannot sync while the device is offline</p>
+                    <p class="indent">To remember which items you deleted, you can screenshot the current list before reloading the app, or use it as a checklist to go back through after your shop, and check you got everything you needed</p>
+                    <p class="indent">However, this is only in case you don't have service in a shop or they don't have Wi-Fi etc.</p>
+                </div>
+
+                <div class="info-section-section">
+                    <h2 class="big-title">Please let me know if you enjoy using this app, and I can create you your own list</h2>
+                    <h2 class="big-title">- Rishi</h2>
+                </div>
+            </div>
+        </div>
+        <script src="index.js" type="module"></script>
+    </body>
+</html>
