@@ -47,9 +47,16 @@ button:hover {
     cursor: pointer;
 }
 
-#cat-img {
+.catImg {
     width: 150px;
     margin: 0 auto;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+#cat-img {
+    display: flex; 
+    justify-content: center;
 }
 
 
@@ -82,17 +89,18 @@ ul li:hover {
     display: flex;
     flex-direction: column; 
     /* max-width: 320px; */
-    margin: 30px 0;
+    margin: 15px 0;
 }
 
 
-.indent {
+/* .indent {
     margin-left: 20px; 
-}
+} */
 
 .info-section-section {
     margin-top: -25px;
     margin-bottom: 120px;
+    text-align: center;
 }
 
 .disappear {
@@ -108,3 +116,13 @@ ul li:hover {
     margin-bottom: 30px;
     /* margin-top: 45px; */
 }
+
+/* #welcome {
+    text-align: center;
+} */
+
+#seasonalImagesToggle {
+    display: block; 
+    margin: 0 auto;
+}
+
