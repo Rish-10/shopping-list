@@ -239,7 +239,7 @@ imageToggle.addEventListener("click", function() {
 
 const images = [
     ["breakfast", ["57.gif", "13.png", "49.png", "51.png", "83.gif"]],
-    ["sleeping", ["1.gif", "29.png", "54.gif", "59.gif", "67.gif", "68.gif", "88.gif"]],
+    ["sleeping", ["1.gif", "29.png", "54.gif", "59.gif", "67.gif", "68.gif"]],
     ["eating", ["8.gif", "9.gif", "11.gif", "19.png", "20.png", "34.png", "42.png", "49.png", "51.png", "61.gif", "63.gif", "96.gif"]],
     ["cooking", ["5.gif", "13.png", "21.png", "33.png", "73.gif"]],
     ["misc", ["2.gif", "9.gif", "14.png", "15.png", "17.png", "18.png", "22.png", "29.png", "56.gif", "58.gif", "62.gif", "70.gif", "71.gif", "72.gif", "74.gif", "75.gif", "76.gif", "78.gif", "82.gif", "83.gif", "89.gif", "91.gif", "92.gif", "93.gif", "94.gif", "97.gif", "98.gif", "100.gif"]],
