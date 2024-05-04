@@ -153,7 +153,9 @@ onValue(imageToggleInDB, function(snapshot) {
 
         render()
 
-    } 
+    } else {
+        document.getElementById("cat.png").className = "catImg" 
+    }
 })
 
 
@@ -163,7 +165,6 @@ function render() {
         functionToggle = 0 
 
         if (toggleValue == 1) {
-
             imageToggle.innerHTML = "Seasonal Images: On"
             let hour = new Date().getHours()
             renderNewImg(hour)
@@ -182,6 +183,8 @@ function render() {
                         document.getElementById(imageList[i]).className = "disappear"
                     } 
                 }
+            } else {
+                imageList.push("cat.png")
             }
 
             document.getElementById("cat.png").className = "catImg" 
@@ -320,20 +323,21 @@ const importantDates = [
 
 
 
-
 // rendering out new image
 
 function renderNewImg(hours) {
+
+
 
     let imageListLength = imageList.length
     let lastImage = imageList[imageListLength - 1]
 
     if (lastImage != "cat.png" && halfHour() == timeValue) {
 
+        addInfo("1", imageList, timeValue, theDate)
+
         document.getElementById("cat.png").className = "disappear"    
         document.getElementById(lastImage).className = "catImg"
-
-        addInfo("1", imageList, timeValue, theDate)
 
     } else {
 
@@ -372,7 +376,7 @@ function renderNewImg(hours) {
         } else if (hours == 13) {
             useableImages = useableImages.concat(images[2][1].filter((item) => useableImages.indexOf(item) < 0))
         } else if (hours == 16) {
-            useableImages = images[2][1][2]
+            useableImages = ["11.gif"]
         } else {
             
             if (months[month] == "November" || months[month] == "December" || months[month] == "January") {
@@ -391,22 +395,25 @@ function renderNewImg(hours) {
 
 
         let index = Math.floor(Math.random() * useableImages.length)
-        let counter = 0
         while (imageList.includes(useableImages[index])) {
-            counter += 1
+
             index = Math.floor(Math.random() * useableImages.length)
-            if (counter > 80) {
+            
+            let found = useableImages.every(r=> imageList.includes(r))
+
+            if (found) {
                 imageList = []
                 imageList.push(useableImages[index])
             }
-        }
 
-        document.getElementById("cat.png").className = "disappear"    
-        document.getElementById(useableImages[index]).className = "catImg"
+        }
 
         imageList.push(useableImages[index])
 
         addInfo("1", imageList, halfHour(), theDate)
+
+        document.getElementById("cat.png").className = "disappear"    
+        document.getElementById(useableImages[index]).className = "catImg"
 
     } 
 }
@@ -438,12 +445,13 @@ function addInfo(imageToggle, todaysImages, time, currentDate) {
 function halfHour() {
 
     let minutes = new Date().getMinutes()
-    let hour = new Date().getHours()
+    let theHour = new Date().getHours()
 
     if (minutes >= 30) {
-        return (hour + ":30")
+        return (theHour + ":30")
     } else {
-        return (hour + ":00")
+        return (theHour + ":00")
     }
 
 }
+
