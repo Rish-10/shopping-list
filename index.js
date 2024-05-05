@@ -154,7 +154,9 @@ onValue(imageToggleInDB, function(snapshot) {
         render()
 
     } else {
-        document.getElementById("cat.png").className = "catImg" 
+        if (imageList.length == 0) {
+            document.getElementById("cat.png").className = "catImg" 
+        }
     }
 })
 
