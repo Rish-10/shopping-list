@@ -403,7 +403,6 @@ function renderNewImg(hours) {
 
             if (found) {
                 imageList = []
-                imageList.push(useableImages[index])
             }
 
         }
