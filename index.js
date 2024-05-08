@@ -245,9 +245,9 @@ imageToggle.addEventListener("click", function() {
 const images = [
     ["breakfast", ["57.gif", "13.png", "49.png", "51.png", "83.gif"]],
     ["sleeping", ["1.gif", "29.png", "54.gif", "59.gif", "67.gif", "68.gif"]],
-    ["eating", ["8.gif", "9.gif", "11.gif", "19.png", "20.png", "34.png", "42.png", "49.png", "51.png", "61.gif", "63.gif", "96.gif"]],
-    ["cooking", ["5.gif", "13.png", "21.png", "33.png", "73.gif"]],
-    ["misc", ["2.gif", "9.gif", "14.png", "15.png", "17.png", "18.png", "22.png", "29.png", "56.gif", "58.gif", "62.gif", "70.gif", "71.gif", "72.gif", "74.gif", "75.gif", "76.gif", "78.gif", "82.gif", "83.gif", "89.gif", "91.gif", "92.gif", "93.gif", "94.gif", "97.gif", "98.gif", "100.gif"]],
+    ["eating", ["8.gif", "9.gif", "11.gif", "19.png", "20.png", "34.png", "42.png", "51.png", "61.gif", "63.gif", "96.gif"]],
+    ["cooking", ["5.gif", "21.png", "33.png", "73.gif"]],
+    ["misc", ["2.gif", "9.gif", "14.png", "15.png", "17.png", "18.png", "22.png", "56.gif", "58.gif", "62.gif", "70.gif", "71.gif", "72.gif", "74.gif", "75.gif", "76.gif", "78.gif", "82.gif", "89.gif", "91.gif", "92.gif", "93.gif", "94.gif", "97.gif", "98.gif", "100.gif"]],
 
     ["celebration", ["12.gif", "30.png", "58.gif", "60.gif", "77.gif", "79.gif", "94.gif", "101.gif"]],
     ["birthday", ["12.gif", "30.png", "36.png", "58.gif", "60.gif", "65.gif", "74.gif", "77.gif", "79.gif", "94.gif", "101.gif"]],
@@ -400,11 +400,19 @@ function renderNewImg(hours) {
         while (imageList.includes(useableImages[index])) {
 
             index = Math.floor(Math.random() * useableImages.length)
-            
-            let found = useableImages.every(r=> imageList.includes(r))
 
-            if (found) {
-                imageList = []
+            if (hours == 16) {
+                for (let i = 0; i < useableImages.length; i++) {
+                    if (useableImages[i] === "11.gif") {
+                        useableImages.splice(i, 1);
+                    }
+                }
+            } else {
+                let found = useableImages.every(r=> imageList.includes(r))
+
+                if (found) {
+                    imageList = []
+                }
             }
 
         }
