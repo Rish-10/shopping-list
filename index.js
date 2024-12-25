@@ -384,7 +384,7 @@ function renderSection(sectionName, theDisplaySectionValues, decidedList, shoppi
                 }
             }
             if (!found) {
-                document.getElementById(`${renderSection(theDisplaySectionValues[1], null, "decided", shoppingList, `noSection/"${theDisplaySectionValues[1]}`)[3]},`).append(sectionDiv)
+                document.getElementById(`${renderSection(theDisplaySectionValues[1], null, "decided", shoppingList, `noSection/${theDisplaySectionValues[1]}`)[3]}`).append(sectionDiv)
             }
         } else {
             document.getElementById("section-list").append(sectionDiv)
