@@ -1,466 +1,788 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
+import { getDatabase, onValue, push, ref, remove, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
 
 const appSettings = {
     databaseURL: "https://realtime-database-bc273-default-rtdb.europe-west1.firebasedatabase.app/"
 }
 
+const name = "Someone"
+const shoppingListName = name + "shoppingList"
+
 const app = initializeApp(appSettings)
 const database = getDatabase(app)
-const shoppingListInDB = ref(database, "publicShoppingList")
+const shoppingListInDB = ref(database, shoppingListName)
 
+const mainSection = document.getElementById("main-section")
+const sectionListSection = document.getElementById("section-list")
+const infoSection = document.getElementById("info-section")
+
+const infoImg = document.getElementById("info-img")
+const regularListImg = document.getElementById("regular-list-img")
+const shoppingListImg = document.getElementById("shopping-list-img")
+const regularAccListImg = document.getElementById("regular-actual-list-img")
+const shoppingAccListImg = document.getElementById("shopping-actual-list-img")
+const shoppingImg = document.getElementById("shopping-img")
+const regularImg = document.getElementById("regular-img")
+
+const shoppingListTitle = document.getElementById("shopping-title")
 const addButtonEl = document.getElementById("add-button")
+const clearButtonEl = document.getElementById("clear-button")
 const inputFieldEl = document.getElementById("input-field")
+const quantityFieldEl = document.getElementById("input-quantity-field")
+
 const shoppingListEl = document.getElementById("shopping-list")
+const sectionListEl = document.getElementById("section-list")
+const innerContainerEl = document.getElementById("inner-container-el")
+
+const notesToggleEl = document.getElementById("notes-toggle")
+const notesAreaEl = document.getElementById("notes-area")
+const spaceBelowShoppingListsEl = document.getElementById("space-bottom-el")
+
+const selectWrapperEl = document.getElementById("select-wrapper")
+const sectionSelectorEl = document.getElementById("sectionSelector")
+const sectionAdderEl = document.getElementById("sectionAdder")
+const sectionAddBtnEl = document.getElementById("add-section-button")
+const customDropdownWrapperEl = document.getElementById("custom-dropdown-wrapper")
+const currentlySelectedEl = document.getElementById("currently-selected")
+const customSelectOptionsEl = document.getElementById("custom-select-options")
+
+let currentList = "shoppingList"
+let shoppingListInfo = []
+let renderedSections = []
+let openedSections = []
 
 
-addButtonEl.addEventListener("click", function() {
-    let inputValue = inputFieldEl.value
-
-    push(shoppingListInDB, inputValue)
-
-    clearInputFieldEl()
-
-    inputFieldEl.focus()
+notesToggleEl.addEventListener("click", function() {
+    closeBottomBars()
+    customSelectOptionsEl.className = "disappear"
+    if (notesAreaEl.hidden) {
+        notesAreaEl.hidden = false 
+        notesAreaEl.focus()
+    } else {
+        notesAreaEl.hidden = true 
+    }
 })
 
-inputFieldEl.addEventListener("keydown", function(e) {
-    if (e.key === 'Enter') {
-        addButtonEl.click()
+sectionAddBtnEl.addEventListener("click", function() {
+    customSelectOptionsEl.className = "disappear"
+    if (sectionAdderEl.hidden) {
+        sectionAdderEl.hidden = false 
+        sectionAdderEl.focus()
+    } else {
+        sectionAdderEl.hidden = true
+        sectionAdderEl.value = "" 
     }
+})
+
+const fields = [inputFieldEl, quantityFieldEl, sectionSelectorEl, sectionAdderEl]
+fields.forEach(field => {
+    field.addEventListener("keydown", (e) => {
+        if (e.key === 'Enter') {
+            addButtonEl.click()
+        }
+    })
+})
+
+const fields2 = [inputFieldEl, quantityFieldEl, notesAreaEl, sectionAddBtnEl, customSelectOptionsEl]
+fields2.forEach(field => {
+    field.addEventListener("click", (e) => {
+        closeBottomBars()
+    })
+})
+
+addButtonEl.addEventListener("click", function() {
+    closeBottomBars()
+    customSelectOptionsEl.className = "disappear"
+
+    let inputValue = inputFieldEl.value
+    let quantityValue = quantityFieldEl.value 
+    let notesValue = notesAreaEl.value
+    let sectionValue = ""
+    if (sectionAdderEl.value != "") {
+        sectionValue = sectionSelectorEl.value + "/" + sectionAdderEl.value
+    } else {
+        sectionValue = sectionSelectorEl.value
+    }
+
+    if (quantityValue > 99) {
+        quantityValue = 99
+    } else if (quantityValue < 0) {
+        quantityValue = 0 
+    } else if (quantityValue == "") {
+        quantityValue = 0 
+    }
+
+
+    let info = {
+        "item": inputValue, 
+        "quantity": quantityValue, 
+        "notes": notesValue,
+        "list": currentList,
+        "section": sectionValue
+    }
+
+    if (inputValue != "") {
+        push(shoppingListInDB, info)
+        clearInputFields()
+        sectionSelectorEl.value = sectionValue
+
+        let options = Array.from(sectionSelectorEl.options)
+        options.forEach((option) => {
+            if (option.value == sectionValue) {
+                currentlySelectedEl.textContent = option.textContent
+            }
+        })
+    } else {
+        inputFieldEl.focus()
+    }
+})
+
+
+clearButtonEl.addEventListener("click", function() {
+    clearInputFields()
+    closeBottomBars()
+    customSelectOptionsEl.className = "disappear"
+    renderShoppingList()
 })
 
 onValue(shoppingListInDB, function(snapshot) {
     if (snapshot.exists()) {
-        let itemsArray = Object.entries(snapshot.val())
-        
-        clearShoppingListEl()
-        
-        for (let i = 0; i < itemsArray.length; i++) {
-            let currentItem = itemsArray[i]
-            let currentItemId = currentItem[0]
-            let currentItemValue = currentItem[1]
-
-            appendItemToShoppingListEl(currentItem)
-        }
+        shoppingListInfo = Object.entries(snapshot.val())
+        renderShoppingList()
     } else {
+        shoppingListInfo = []
+        shoppingListEl.className = "" 
         shoppingListEl.innerHTML = "No items here... yet"
+        sectionListEl.innerHTML = "" 
+    }
+})
+
+
+function renderShoppingList() {
+    clearShoppingListEl()
+    renderedSections = []
+    let noItems = true
+    let noItemsInShoppingList = true
+    shoppingListInfo = sortShoppingList(shoppingListInfo)
+    for (let i = 0; i < shoppingListInfo.length; i++) {
+        if (shoppingListInfo[i][1].list == currentList) {
+            appendItemToShoppingListEl(shoppingListInfo[i])
+            noItems = false 
+            if (getSectionValues(shoppingListInfo[i][1].section)[0] === "noSection") {
+                noItemsInShoppingList = false; 
+            }
+        }
+    }
+    if (noItems) {
+        shoppingListEl.innerHTML = "No items here... yet"
+    } else if (noItemsInShoppingList) {
+        shoppingListEl.className = "disappear"
+    } else {
+        shoppingListEl.className = ""
+    }
+
+    for (let i = 0; i < openedSections.length; i++) {
+        if (openedSections[i][1] == true && openedSections[i][2] == currentList) {
+            document.getElementById(`${openedSections[i][0]}`).click()
+        }
+    }
+
+    renderSectionsDropdown()
+}
+
+
+
+function sortShoppingList(database) {
+    // Build a hierarchical structure from the database
+    function buildHierarchy(items) {
+        const hierarchy = {};
+
+        items.forEach(([id, data]) => {
+            const sections = data.section.split('/').map(s => s.trim());
+            let current = hierarchy;
+
+            sections.forEach((section, index) => {
+                if (!current[section]) {
+                    current[section] = { subsections: {}, items: [] };
+                }
+
+                if (index === sections.length - 1) {
+                    current[section].items.push([id, data]);
+                } else {
+                    current = current[section].subsections;
+                }
+            });
+        });
+
+        return hierarchy;
+    }
+
+    // Recursively sort the hierarchy
+    function sortHierarchy(hierarchy) {
+        const sortedSections = Object.keys(hierarchy).sort((a, b) => a.localeCompare(b));
+
+        let sortedItems = [];
+
+        sortedSections.forEach(section => {
+            const { subsections, items } = hierarchy[section];
+
+            items.sort(([, aData], [, bData]) => aData.item.localeCompare(bData.item));
+
+            sortedItems.push(...items);
+
+            const sortedSubsectionItems = sortHierarchy(subsections);
+            sortedItems.push(...sortedSubsectionItems);
+        });
+
+        return sortedItems;
+    }
+
+    try {
+        const hierarchy = buildHierarchy(database);
+        return sortHierarchy(hierarchy);
+    } catch (error) {
+        console.error("Error during processing:", error.message);
+        return [];
+    }
+}
+
+function renderSectionsDropdown() {
+    customSelectOptionsEl.innerHTML = ""; // Clear the dropdown
+
+    // Add "No Section ▽" as the first option
+    const noSectionLi = document.createElement("li");
+    noSectionLi.textContent = "No Section ▽";
+    noSectionLi.dataset.value = "noSection"; // Set value for "No Section"
+    customSelectOptionsEl.appendChild(noSectionLi);
+
+    // Step 1: Build hierarchy from sectionSelectorEl options
+    const hierarchy = {};
+    const options = Array.from(sectionSelectorEl.options);
+
+    options.forEach(option => {
+        const sectionPath = option.value.split('/').map(s => s.trim()); // Split the section by '/'
+        let current = hierarchy;
+
+        sectionPath.forEach((section, index) => {
+            if (section === "noSection") return; // Skip "noSection" in hierarchy
+
+            if (!current[section]) {
+                current[section] = { subsections: {} };
+            }
+
+            // Traverse to the next level
+            current = current[section].subsections;
+        });
+    });
+
+    // Step 2: Render dropdown based on the hierarchy
+    function renderHierarchy(hierarchy, parentPath = [], indentLevel = 0) {
+        const indent = "&nbsp;".repeat(indentLevel * 4); // Indentation using non-breaking spaces
+
+        Object.keys(hierarchy).sort((a, b) => a.localeCompare(b)).forEach(section => {
+            // Generate the full path by combining parentPath and current section
+            const fullPath = [...parentPath, section].join('/');
+
+            // Create the list item
+            const li = document.createElement("li");
+
+            // Set the list item text with indentation and section name
+            li.innerHTML = `${indent}${section}`;
+            li.dataset.value = fullPath; // Assign the full section path to data-value
+
+            // Append the list item to the dropdown
+            customSelectOptionsEl.appendChild(li);
+
+            // Recursively render subsections, passing the updated path
+            renderHierarchy(hierarchy[section].subsections, [...parentPath, section], indentLevel + 1);
+        });
+    }
+
+    renderHierarchy(hierarchy); // Start rendering the hierarchy
+}
+
+currentlySelectedEl.addEventListener("click", () => {
+    if (customSelectOptionsEl.className == "disappear") {
+        customSelectOptionsEl.className = "custom-options" 
+    } else {
+        customSelectOptionsEl.className = "disappear"
+    }
+})
+
+document.addEventListener("click", (event) => {
+    if (!customSelectOptionsEl.contains(event.target) && !currentlySelectedEl.contains(event.target)) {
+        customSelectOptionsEl.className = "disappear"
+    } 
+});
+
+customSelectOptionsEl.addEventListener("click", (event) => {
+    if (event.target.tagName === "LI") {
+        // let value = event.target.dataset.value
+        let value = "noSection"
+        let text = event.target.textContent.trim()
+
+        let options = Array.from(sectionSelectorEl.options)
+        options.forEach((option) => {
+            if (option.textContent == text) {
+                value = option.value
+            }
+        })
+
+        currentlySelectedEl.textContent = text
+        sectionSelectorEl.value = value 
+        customSelectOptionsEl.className = "disappear"
     }
 })
 
 function clearShoppingListEl() {
     shoppingListEl.innerHTML = ""
+    innerContainerEl.innerHTML = "" 
+    sectionSelectorEl.innerHTML = `<option class='select-items' value='noSection' selected='selected'>No Section ▽</option>`
+    currentlySelectedEl.textContent = "No Section ▽"
+    sectionAdderEl.innerHTML = "" 
+    sectionListEl.innerHTML = "" 
 }
 
-function clearInputFieldEl() {
+function clearInputFields() {
     inputFieldEl.value = ""
+    quantityFieldEl.value = ""
+    notesAreaEl.value = ""
+    // sectionAdderEl.hidden = true
+    sectionAdderEl.value = "" 
+}
+
+function renderSection(sectionName, theDisplaySectionValues, decidedList, shoppingList, ogSectionValue) {
+    addSectionToSelector(sectionName, ogSectionValue)
+
+    let sectionDiv = document.createElement("div")
+    let sectionHeader = document.createElement("h3")
+    // sectionHeader.innerHTML = `<h3 id='${sectionName-title}' class="heading">▷ ${sectionName}</h3>`
+    sectionHeader.id = `${sectionName}-${shoppingList}-title`
+    sectionHeader.className = "heading"
+    sectionHeader.textContent = `▷ ${sectionName}`
+    sectionDiv.append(sectionHeader)
+
+    let theSectionList = document.createElement("ul")
+    theSectionList.id = `${sectionName}-${shoppingList}-items-list`
+    theSectionList.className = "disappear"      
+    // class changes to 'a-shopping-list'
+    sectionDiv.append(theSectionList)
+
+    let subSections = document.createElement("div")
+    subSections.id = `${sectionName}-${shoppingList}-subsections`
+    subSections.className = "disappear"         
+    // class changes to 'indent-left'
+    sectionDiv.append(subSections)
+
+    if (decidedList == null) {
+        if (theDisplaySectionValues[1] != "noSection" && theDisplaySectionValues[1] != '') {
+            let found = false 
+            for (let i = 0; i < renderedSections.length; i++) {
+                if (renderedSections[i][0] == theDisplaySectionValues[1] && found == false) {
+                    found = true 
+                    document.getElementById(`${renderedSections[i][3]}`).append(sectionDiv)
+                }
+            }
+            if (!found) {
+                document.getElementById(`${renderSection(theDisplaySectionValues[1], null, "decided", shoppingList, `noSection/"${theDisplaySectionValues[1]}`)[3]},`).append(sectionDiv)
+            }
+        } else {
+            document.getElementById("section-list").append(sectionDiv)
+        }
+    } else {
+        document.getElementById("section-list").append(sectionDiv)
+    }
+
+    let found = false 
+    let index = 0 
+    for (let i = 0; i < openedSections.length; i++) {
+        if (openedSections[i][0] == `${sectionName}-${shoppingList}-title`) {
+            found = true 
+            index = i 
+        }
+    }
+    if (!found) {
+        openedSections.push([`${sectionName}-${shoppingList}-title`, false, shoppingList])
+        index = openedSections.length - 1
+    }
+
+    let toggleCounter = 0
+    document.getElementById(`${sectionName}-${shoppingList}-title`).addEventListener("click", function() {
+        if (toggleCounter % 2 == 0 ) {
+            document.getElementById(`${sectionName}-${shoppingList}-title`).textContent = `▽ ${sectionName}`
+            if (document.getElementById(`${sectionName}-${shoppingList}-items-list`).childNodes.length == 0) {
+                document.getElementById(`${sectionName}-${shoppingList}-items-list`).className = "disappear"
+            } else {
+                document.getElementById(`${sectionName}-${shoppingList}-items-list`).className = "a-shopping-list"
+            }
+        
+            if (document.getElementById(`${sectionName}-${shoppingList}-subsections`).childNodes.length == 0) {
+                document.getElementById(`${sectionName}-${shoppingList}-subsections`).className = "disappear"
+            } else {
+                document.getElementById(`${sectionName}-${shoppingList}-subsections`).className = "indent-left"
+            }  
+
+            openedSections[index][1] = true
+
+        } else {
+            document.getElementById(`${sectionName}-${shoppingList}-title`).textContent = `▷ ${sectionName}`
+            document.getElementById(`${sectionName}-${shoppingList}-subsections`).className = "disappear"
+            document.getElementById(`${sectionName}-${shoppingList}-items-list`).className = "disappear"
+
+            openedSections[index][1] = false
+        }
+        toggleCounter++
+    })
+
+    renderedSections.push([sectionName, `${sectionName}-${shoppingList}-items-list`, `${sectionName}-${shoppingList}-title`, `${sectionName}-${shoppingList}-subsections`])
+    return [sectionName, `${sectionName}-${shoppingList}-items-list`, `${sectionName}-${shoppingList}-title`, `${sectionName}-${shoppingList}-subsections`]
 }
 
 function appendItemToShoppingListEl(input) {
     let itemID = input[0]
-    let itemValue = input[1]
+    let info = input[1]
+
+    let itemValue = info.item
+    let itemQuantity = info.quantity
+    let itemNotes = info.notes
+    let sectionValue = info.section
+    let list = info.list
+
+    if (list != currentList) {
+        return
+    }
 
     let newEl = document.createElement("li")
-    newEl.textContent = itemValue
-    shoppingListEl.append(newEl)
+    if (Number(itemQuantity) != 0) {
+        newEl.textContent += `${itemQuantity} | `
+    }
+    newEl.textContent += `${itemValue}`
+    if (itemNotes != "") {
+        newEl.textContent += ` 🗒️`
+    }
+    newEl.draggable = true
 
-    newEl.addEventListener("dblclick", function() {
+
+    let theDisplaySectionValues = getSectionValues(sectionValue)
+
+    if (sectionValue == "noSection") {
+        shoppingListEl.append(newEl)
+    } else {
+        let found = false
+        for (let i = 0; i < renderedSections.length; i++) {
+            if (renderedSections[i][0] == theDisplaySectionValues[0]) {
+                document.getElementById(`${renderedSections[i][1]}`).append(newEl)
+                found = true 
+            }
+        }
+        if (!found) {
+            document.getElementById(`${renderSection(theDisplaySectionValues[0], theDisplaySectionValues, null, list, sectionValue)[1]}`).append(newEl)
+        }
+    }
+
+
+
+
+    let addToNewListInfo = []
+    if (list == "shoppingList") {
+        addToNewListInfo = ["Regular Items List", "regularList"]
+    } else if (list == "regularList") {
+        addToNewListInfo = ["Shopping List", "shoppingList"]
+    }
+
+    let el = document.createElement("div")
+    el.innerHTML = `<div id='${itemID}' class='disappear'>
+                        <h3 class='item-line'>${itemValue}</h3>
+                        <h4 class='main-notes-section' id='${itemID}-note'>${itemNotes}</h4>
+                        <div class='quantity-line'>
+                            <button id='${itemID}-minus' class='quantity-adjuster'>-</button> <p id='${itemID}-quantity' >${itemQuantity}</p> <button id='${itemID}-add' class='quantity-adjuster'>+</button>
+                        </div>
+                        <div class='button-line'>
+                            <button class='update-quantity' id='${itemID}-deleteBtn'>✍️</button>
+                            <button class='add-shopping-list' id='${itemID}-regular-list'>Add to ${addToNewListInfo[0]}</button>
+                            <button class='update-quantity' id='${itemID}-updateQuantity'>✓</button>
+                        </div>
+                    </div>`
+    innerContainerEl.append(el)
+    if (itemNotes == "") {
+        document.getElementById(`${itemID}-note`).className = "disappear"
+    }
+
+
+    newEl.addEventListener("click", function() {
+
+        for (let i = 0; i < shoppingListInfo.length; i++) {
+            if (shoppingListInfo[i][1].list == currentList && itemID != shoppingListInfo[i][0]) {
+                document.getElementById(shoppingListInfo[i][0]).className = "disappear"
+            }
+        }
+
+        customSelectOptionsEl.className = "disappear"
+
+        let currentClass = document.getElementById(`${itemID}`).className
+        if (currentClass == "disappear") {
+            document.getElementById(`${itemID}`).className = "bottom-bar"
+            window.scrollTo({
+                top: spaceBelowShoppingListsEl.offsetTop - 75,
+                behaviour: 'smooth', 
+            })
+            window.scrollTo({
+                top: newEl.offsetTop - 75,
+                behaviour: 'smooth', 
+            })
+            // spaceBelowShoppingListsEl.hidden = false
+            if (itemNotes == "") {
+                spaceBelowShoppingListsEl.className = "space-bottom-less"
+            } else {
+                spaceBelowShoppingListsEl.className = "space-bottom"
+            }
+        } else {
+            document.getElementById(`${itemID}`).className = "disappear"
+            setTimeout(function() {
+                spaceBelowShoppingListsEl.className = "disappear"
+            }, 300)
+        } 
+    })
+
+    document.getElementById(`${itemID}-minus`).addEventListener("click", function() {
+        itemQuantity -= 1 
+        if (itemQuantity < 0) {
+            itemQuantity = 0
+        }
+        document.getElementById(`${itemID}-quantity`).textContent = itemQuantity
+    })
+
+    document.getElementById(`${itemID}-add`).addEventListener("click", function() {
+        itemQuantity = Number(itemQuantity) + 1 
+        if (itemQuantity > 99) {
+            itemQuantity -= 1
+        }
+        document.getElementById(`${itemID}-quantity`).textContent = itemQuantity
+    })
+
+    document.getElementById(`${itemID}-regular-list`).addEventListener("click", function() {
+        info.list = addToNewListInfo[1]
+        info.quantity = document.getElementById(`${itemID}-quantity`).textContent
+
+        push(shoppingListInDB, info)
+
+        closeBottomBars()
+        customSelectOptionsEl.className = "disappear"
+    })
+
+    document.getElementById(`${itemID}-updateQuantity`).addEventListener("click", function() {
+        let updates = {
+            "quantity": itemQuantity
+        }
+
+        update(ref(database, shoppingListName + "/" + itemID), updates)
+        closeBottomBars()
+        customSelectOptionsEl.className = "disappear"
+    })
+
+    document.getElementById(`${itemID}-deleteBtn`).addEventListener("click", function() {
+        closeBottomBars()
+        customSelectOptionsEl.className = "disappear"
+
         navigator.clipboard.writeText(itemValue)
 
-        let exactLocationOfItemInDB = ref(database, `publicShoppingList/${itemID}`)
+        inputFieldEl.value = itemValue
+        quantityFieldEl.value = itemQuantity
+        notesAreaEl.value = itemNotes
+        sectionSelectorEl.value = theDisplaySectionValues[0]
+        sectionAdderEl.hidden = true 
+        sectionAdderEl.value = ""
+        
+        if (itemNotes != "") {
+            notesAreaEl.hidden = false 
+        }
 
+        let exactLocationOfItemInDB = ref(database, `${shoppingListName}/${itemID}`)
         remove(exactLocationOfItemInDB)
+
+        let itemsInSection = false 
+        for (let i = 0; i < shoppingListInfo.length; i++) {
+            if (shoppingListInfo[i][1].list == currentList && getSectionValues(shoppingListInfo[i][1].section)[0] == theDisplaySectionValues[0]) {
+                itemsInSection = true
+            }
+        }
+
+        if (!itemsInSection) {
+            for (let i = 0; i < openedSections.length; i++) {
+                if (openedSections[i][0] === `${theDisplaySectionValues[0]}-${currentList}-title`) {
+                    openedSections.splice(i, 1)
+                }
+            }
+        }
+
+        renderShoppingList()
+    })
+
+    newEl.addEventListener("dblclick", function() {
+        document.getElementById(`${itemID}-deleteBtn`).click()
     })
 }
 
+function closeBottomBars() {
+    for (let i = 0; i < shoppingListInfo.length; i++) {
+        if (shoppingListInfo[i][1].list == currentList) {
+            document.getElementById(`${shoppingListInfo[i][0]}`).className = "disappear"
+        }
+    }
+    spaceBelowShoppingListsEl.className = "disappear"
+}
 
+function addSectionToSelector(section, ogSectionValue) {
+    let optionFound = false
 
-let infoImg = document.querySelector("#info-img")
-let subMainSection = document.querySelector("#main-section")
-let infoSection = document.querySelector("#info-section")
-let infoSectionToggle = 0 
+    for (let i = 0; i < sectionSelectorEl.length; i++) {
+        if (sectionSelectorEl.options[i].value == section) {
+            optionFound = true; 
+        }
+    }
 
-let catImg = document.querySelector("#cat-img")
-let inputField = document.querySelector("#input-field")
-let addBtn = document.querySelector("#add-button")
-let shopList = document.querySelector("#shopping-list")
+    if (!optionFound) {
+        let option = document.createElement("option")
+        option.value = ogSectionValue
+        option.textContent = section
+        sectionSelectorEl.appendChild(option)
+    }
+}
+
+function getSectionValues(sectionValue) {
+    const segments = sectionValue.split('/').filter(Boolean)
+
+    let returnArray = []
+    let lastSegment = segments[segments.length - 1]
+    let secondLastSegment = segments.length > 1 ? segments[segments.length -2] : ""
+
+    returnArray.push(lastSegment.trim())
+    returnArray.push(secondLastSegment.trim())
+
+    return returnArray
+}
 
 infoImg.addEventListener("click", function() {
-    if (infoSectionToggle % 2 === 0) {
-        subMainSection.className = "disappear"
 
-        catImg.className = "disappear"
-        inputField.className = "disappear"
-        addBtn.className = "disappear"
-        shopList.className = "disappear"
+    closeBottomBars()
+    customSelectOptionsEl.className = "disappear"
 
-        infoSection.className = ""
-        infoSectionToggle += 1
-    } else {
-        subMainSection.className = ""
+    mainSection.className = "disappear"
+    infoSection.hidden = false
+    sectionListSection.hidden = true 
+    clearShoppingListEl()
 
-        catImg.className = ""
-        inputField.className = ""
-        addBtn.className = ""
-        shopList.className = ""
+    shoppingImg.hidden = true 
+    regularImg.hidden = true 
 
-        infoSection.className = "disappear"
-        infoSectionToggle += 1
-    }
+    currentList = "infoSection"
+
+    inputFieldEl.hidden = true 
+    quantityFieldEl.hidden = true 
+    addButtonEl.hidden = true 
+    clearButtonEl.hidden = true 
+    shoppingListEl.hidden = true 
+    shoppingListTitle.hidden = true 
+
+    notesToggleEl.hidden = true 
+    notesAreaEl.hidden = true 
+    selectWrapperEl.hidden = true
+    sectionSelectorEl.value = "noSection"
+    sectionAdderEl.hidden = true 
+    sectionAddBtnEl.className = "disappear"
+    
+
+    regularListImg.hidden = true 
+    shoppingListImg.hidden = true
+    regularAccListImg.hidden = false
+    shoppingAccListImg.hidden = false 
+    infoImg.hidden = true 
 })
 
+regularListImg.addEventListener("click", function() {
+    
+    closeBottomBars()
+    customSelectOptionsEl.className = "disappear"
 
+    mainSection.className = ""
+    infoSection.hidden = true 
+    sectionListSection.hidden = false 
+    clearShoppingListEl()
 
+    shoppingImg.hidden = true 
+    regularImg.hidden = false 
 
+    shoppingListTitle.innerHTML = name + "'s Regular Items"
+    currentList = "regularList"
 
+    inputFieldEl.hidden = false 
+    quantityFieldEl.hidden = false
+    addButtonEl.hidden = false
+    clearButtonEl.hidden = false
+    shoppingListEl.hidden = false
+    shoppingListTitle.hidden = false
 
+    notesToggleEl.hidden = false 
+    notesAreaEl.hidden = true
+    selectWrapperEl.hidden = false
+    sectionSelectorEl.value = "noSection"
+    sectionAdderEl.hidden = true
+    sectionAddBtnEl.className = "add-sect-btn"
 
+    regularListImg.hidden = true 
+    shoppingListImg.hidden = false 
+    regularAccListImg.hidden = true
+    shoppingAccListImg.hidden = true 
+    infoImg.hidden = false
 
-
-
-let toggleDBName = "publicShoppingListImageToggle"
-const imageToggleInDB = ref(database, toggleDBName)
-
-let toggleValue = ""
-let imageList = []
-let timeValue = -1
-let currentDate = ""
-let functionToggle = 1
-
-let imageToggle = document.getElementById("seasonalImagesToggle")
-imageToggle.innerHTML = "Seasonal Images: Off"
-
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-let date = new Date().getDate()
-let month = new Date().getMonth()
-let theDate = date + " " + months[month]
-
-
-onValue(imageToggleInDB, function(snapshot) {
-    if (snapshot.exists()) {
-
-        let itemsArray = Object.entries(snapshot.val())
-        let item = itemsArray[0][1]
-
-        toggleValue = item.imageToggle
-        timeValue = item.time
-        currentDate = item.currentDate
-        imageList = item.todaysImages
-
-        if (theDate != currentDate) {
-            imageList = []
-        }
-
-        render()
-
-    } else {
-        if (imageList.length == 0) {
-            document.getElementById("cat.png").className = "catImg" 
-        }
-    }
+    renderShoppingList()
 })
 
+shoppingListImg.addEventListener("click", function() {
 
+    closeBottomBars()
+    customSelectOptionsEl.className = "disappear"
 
-function render() {
-    if (functionToggle === 1) {
-        functionToggle = 0 
+    mainSection.className = ""
+    infoSection.hidden = true 
+    sectionListSection.hidden = false 
+    clearShoppingListEl()
 
-        if (toggleValue == 1) {
-            imageToggle.innerHTML = "Seasonal Images: On"
-            let hour = new Date().getHours()
-            renderNewImg(hour)
+    shoppingImg.hidden = false 
+    regularImg.hidden = true 
 
-        } else {
+    shoppingListTitle.innerHTML = name + "'s Shopping List"
+    currentList = "shoppingList"
 
-            imageToggle.innerHTML = "Seasonal Images: Off"
+    inputFieldEl.hidden = false
+    quantityFieldEl.hidden = false
+    addButtonEl.hidden = false
+    clearButtonEl.hidden = false
+    shoppingListEl.hidden = false
+    shoppingListTitle.hidden = false
 
-            if (imageList.length > 0) {
-                if (imageList[imageList.length - 1] != "cat.png") {
-                    imageList.push("cat.png")
-                }
+    notesToggleEl.hidden = false
+    notesAreaEl.hidden = true
+    selectWrapperEl.hidden = false
+    sectionSelectorEl.value = "noSection"
+    sectionAdderEl.hidden = true
+    sectionAddBtnEl.className = "add-sect-btn"
 
-                for (let i = 0; i < imageList.length; i++) {
-                    if (imageList[i] != "cat.png") {
-                        document.getElementById(imageList[i]).className = "disappear"
-                    } 
-                }
-            } else {
-                imageList.push("cat.png")
-            }
-
-            document.getElementById("cat.png").className = "catImg" 
-
-            addInfo("0", imageList, halfHour(), theDate)
-
-        }
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-// seasonal image button toggle
-
-imageToggle.addEventListener("click", function() {
-    if (toggleValue == 0) {
-
-        functionToggle = 1
-
-        toggleValue = 1
-
-        render() 
-
-    } else if (toggleValue == 1) {
-
-        functionToggle = 1
-
-        toggleValue = 0 
-        
-        render()
-
-    } 
+    regularListImg.hidden = false 
+    shoppingListImg.hidden = true
+    regularAccListImg.hidden = true
+    shoppingAccListImg.hidden = true 
+    infoImg.hidden = false 
+    
+    renderShoppingList()
 })
 
-
-
-
-
-
-
-
-
-
-
-// organising images
-
-const images = [
-    ["breakfast", ["57.gif", "13.png", "49.png", "51.png", "83.gif"]],
-    ["sleeping", ["1.gif", "29.png", "54.gif", "59.gif", "67.gif", "68.gif"]],
-    ["eating", ["8.gif", "9.gif", "11.gif", "19.png", "20.png", "34.png", "42.png", "51.png", "61.gif", "63.gif", "96.gif"]],
-    ["cooking", ["5.gif", "21.png", "33.png", "73.gif"]],
-    ["misc", ["2.gif", "9.gif", "14.png", "15.png", "17.png", "18.png", "22.png", "56.gif", "58.gif", "62.gif", "70.gif", "71.gif", "72.gif", "74.gif", "75.gif", "76.gif", "78.gif", "82.gif", "89.gif", "91.gif", "92.gif", "93.gif", "94.gif", "97.gif", "98.gif", "100.gif"]],
-
-    ["celebration", ["12.gif", "30.png", "58.gif", "60.gif", "77.gif", "79.gif", "94.gif", "101.gif"]],
-    ["birthday", ["12.gif", "30.png", "36.png", "58.gif", "60.gif", "65.gif", "74.gif", "77.gif", "79.gif", "94.gif", "101.gif"]],
-    ["valentines", ["23.png", "52.png", "54.gif", "65.gif", "78.gif", "87.gif"]],
-    ["easter", ["27.png", "28.png", "66.gif"]],
-    ["halloween", ["48.png", "64.gif", "74.gif"]],
-    ["christmas", ["7.gif", "16.png", "24.png", "25.png", "26.png", "31.png", "37.png", "39.png", "46.png", "50.png", "53.png", "60.gif"]],
-    ["newYears", ["12.gif", "30.png", "57.gif", "77.gif", "79.gif", "94.gif", "101.gif"]],
-
-    ["aprilFools", ["71.gif", "98.gif"]],
-    ["guyFawkes", ["77.gif"]],
-    ["remembranceDay", ["65.gif"]],
-
-    ["spring", ["32.png", "55.gif", "69.gif", "72.gif", "90.gif", "91.gif", "100.gif"]],
-    ["summer", ["41.png", "47.png", "69.gif", "80.gif", "90.gif", "93.gif", "100.gif"]],
-    ["autumn", ["38.png", "55.gif", "69.gif", "72.gif", "95.gif", "100.gif"]],
-    ["winter", ["24.png", "25.png", "39.png", "50.png", "69.gif", "95.gif"]],
-
-    ["evening", ["2.gif", "6.gif", "14.png", "15.png", "17.png", "22.png", "43.png", "56.gif", "62.gif", "69.gif", "70.gif", "71.gif", "76.gif", "78.gif", "82.gif", "83.gif", "89.gif"]]
-]
-
-
-
-
-
-
-
-
-
-// important dates
-
-let year = new Date().getFullYear()
-function getEaster(year) {
-	var f = Math.floor,
-		// Golden Number - 1
-		G = year % 19,
-		C = f(year / 100),
-		// related to Epact
-		H = (C - f(C / 4) - f((8 * C + 13)/25) + 19 * G + 15) % 30,
-		// number of days from 21 March to the Paschal full moon
-		I = H - f(H/28) * (1 - f(29/(H + 1)) * f((21-G)/11)),
-		// weekday for the Paschal full moon
-		J = (year + f(year / 4) + I + 2 - C + f(C / 4)) % 7,
-		// number of days from 21 March to the Sunday on or before the Paschal full moon
-		L = I - J,
-		month = 3 + f((L + 40)/44),
-		day = L + 28 - 31 * f(month / 4);
-
-	return [month,day];
-}
-let easterMonth = getEaster(year)[0] - 1
-let easterDate = getEaster(year)[1]
-let fullEasterDate = easterDate + " " + months[easterMonth]
-
-
-const importantDates = [
-    ["birthday", "10 November"],
-    ["celebration", "10 November"],
-    ["christmas", "14 December", "15 December", "16 December", "17 December", "18 December", "19 December", "20 December", "21 December", "22 December", "23 December", "24 December", "25 December", "26 December", "27 December"], 
-    ["halloween", "24 October", "25 October", "26 October", "27 October", "28 October", "29 October", "30 October", "31 October"],
-    ["valentines", "10 February", "11 February", "12 February", "13 February", "14 February"],
-    ["newYears", "31 December", "1 January"],
-    ["easter", fullEasterDate],
-    ["aprilFools", "1 April"],
-    ["guyFawkes", "5 November"],
-    ["remembranceDay", "11 November"]
-]
-
-
-
-
-
-
-
-
-
-
-// rendering out new image
-
-function renderNewImg(hours) {
-
-
-
-    let imageListLength = imageList.length
-    let lastImage = imageList[imageListLength - 1]
-
-    if (lastImage != "cat.png" && halfHour() == timeValue) {
-
-        addInfo("1", imageList, timeValue, theDate)
-
-        document.getElementById("cat.png").className = "disappear"    
-        document.getElementById(lastImage).className = "catImg"
-
-    } else {
-
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-
-        let useableImages = []
-        let event = ""
-        let eventIndex = 0 
-
-        for (let i = 0; i < importantDates.length; i++) {
-            for (let j = 0; j < importantDates[i].length; j++) {
-                if (theDate == importantDates[i][j]) {
-                    for (let k = 0; k < images.length; k++) {
-                        if (images[k][0] === importantDates[i][0]) {
-                            event = images[k][0]
-                            eventIndex = k 
-                            useableImages = useableImages.concat(images[k][1].filter((item) => useableImages.indexOf(item) < 0))
-                        }
-                    }
-                }
-            }
-        }
-
-        if (event == "birthday" || event == "newYears" || event == "christmas" || event == "halloween" || event == "easter" || event == "valentines") {
-            useableImages = useableImages.concat(images[eventIndex][1].filter((item) => useableImages.indexOf(item) < 0))
-        } else if (hours < 7 || hours > 21) {
-            useableImages = useableImages.concat(images[1][1].filter((item) => useableImages.indexOf(item) < 0))
-        } else if (hours == 7 || hours == 8) {
-            useableImages = useableImages.concat(images[0][1].filter((item) => useableImages.indexOf(item) < 0))
-        } else if (hours == 18) {
-            useableImages = useableImages.concat(images[3][1].filter((item) => useableImages.indexOf(item) < 0))
-        } else if (hours == 19) {
-            useableImages = useableImages.concat(images[2][1].filter((item) => useableImages.indexOf(item) < 0))
-        } else if (hours == 20 || hours == 21) {
-            useableImages = useableImages.concat(images[19][1].filter((item) => useableImages.indexOf(item) < 0))
-        } else if (hours == 13) {
-            useableImages = useableImages.concat(images[2][1].filter((item) => useableImages.indexOf(item) < 0))
-        } else if (hours == 16) {
-            useableImages = ["11.gif"]
-        } else {
-            
-            if (months[month] == "November" || months[month] == "December" || months[month] == "January") {
-                useableImages = useableImages.concat(images[18][1].filter((item) => useableImages.indexOf(item) < 0))
-            } else if (months[month] == "February" || months[month] == "March" || months[month] == "April") {
-                useableImages = useableImages.concat(images[15][1].filter((item) => useableImages.indexOf(item) < 0))
-            } else if (months[month] == "May" || months[month] == "June" || months[month] == "July" || months[month] == "August") {
-                useableImages = useableImages.concat(images[16][1].filter((item) => useableImages.indexOf(item) < 0))
-            } else if (months[month] == "September" || months[month] == "October") {
-                useableImages = useableImages.concat(images[17][1].filter((item) => useableImages.indexOf(item) < 0))
-            }
-
-            useableImages = useableImages.concat(images[4][1].filter((item) => useableImages.indexOf(item) < 0))
-
-        }
-
-
-        let index = Math.floor(Math.random() * useableImages.length)
-        while (imageList.includes(useableImages[index])) {
-
-            index = Math.floor(Math.random() * useableImages.length)
-
-            if (hours == 16) {
-                for (let i = 0; i < useableImages.length; i++) {
-                    if (useableImages[i] === "11.gif") {
-                        useableImages.splice(i, 1);
-                    }
-                }
-            } else {
-                let found = useableImages.every(r=> imageList.includes(r))
-
-                if (found) {
-                    imageList = []
-                }
-            }
-
-        }
-
-        imageList.push(useableImages[index])
-
-        addInfo("1", imageList, halfHour(), theDate)
-
-        document.getElementById("cat.png").className = "disappear"    
-        document.getElementById(useableImages[index]).className = "catImg"
-
-    } 
-}
-
-
-
-
-
-function addInfo(imageToggle, todaysImages, time, currentDate) {
-    
-    let arr = []
-    for (let i = 0; i < todaysImages.length; i++) {
-        arr.push([i, todaysImages[i]])
-    }
-    
-    const obj = Object.fromEntries(arr)
-    
-    remove(imageToggleInDB)
-    push(imageToggleInDB, {
-        "imageToggle": imageToggle, 
-        "time": time,
-        "currentDate": currentDate,
-        "todaysImages": obj,
-    })
-
-}
-
-
-function halfHour() {
-
-    let minutes = new Date().getMinutes()
-    let theHour = new Date().getHours()
-
-    if (minutes >= 30) {
-        return (theHour + ":30")
-    } else {
-        return (theHour + ":00")
-    }
-
-}
-
+regularAccListImg.addEventListener("click", function() {
+    regularListImg.click()
+})
+
+shoppingAccListImg.addEventListener("click", function() {
+    shoppingListImg.click()
+})
+
+shoppingListImg.click()
