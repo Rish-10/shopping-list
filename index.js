@@ -357,19 +357,19 @@ function renderSection(sectionName, theDisplaySectionValues, decidedList, shoppi
     let sectionDiv = document.createElement("div")
     let sectionHeader = document.createElement("h3")
     // sectionHeader.innerHTML = `<h3 id='${sectionName-title}' class="heading">▷ ${sectionName}</h3>`
-    sectionHeader.id = `${sectionName}-${shoppingList}-title`
+    sectionHeader.id = `${sectionName}-${shoppingList}-${ogSectionValue}-title`
     sectionHeader.className = "heading"
     sectionHeader.textContent = `▷ ${sectionName}`
     sectionDiv.append(sectionHeader)
 
     let theSectionList = document.createElement("ul")
-    theSectionList.id = `${sectionName}-${shoppingList}-items-list`
+    theSectionList.id = `${sectionName}-${shoppingList}-${ogSectionValue}-items-list`
     theSectionList.className = "disappear"      
     // class changes to 'a-shopping-list'
     sectionDiv.append(theSectionList)
 
     let subSections = document.createElement("div")
-    subSections.id = `${sectionName}-${shoppingList}-subsections`
+    subSections.id = `${sectionName}-${shoppingList}-${ogSectionValue}-subsections`
     subSections.className = "disappear"         
     // class changes to 'indent-left'
     sectionDiv.append(subSections)
@@ -396,46 +396,46 @@ function renderSection(sectionName, theDisplaySectionValues, decidedList, shoppi
     let found = false 
     let index = 0 
     for (let i = 0; i < openedSections.length; i++) {
-        if (openedSections[i][0] == `${sectionName}-${shoppingList}-title`) {
+        if (openedSections[i][0] == `${sectionName}-${shoppingList}-${ogSectionValue}-title`) {
             found = true 
             index = i 
         }
     }
     if (!found) {
-        openedSections.push([`${sectionName}-${shoppingList}-title`, false, shoppingList])
+        openedSections.push([`${sectionName}-${shoppingList}-${ogSectionValue}-title`, false, shoppingList])
         index = openedSections.length - 1
     }
 
     let toggleCounter = 0
-    document.getElementById(`${sectionName}-${shoppingList}-title`).addEventListener("click", function() {
+    document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-title`).addEventListener("click", function() {
         if (toggleCounter % 2 == 0 ) {
-            document.getElementById(`${sectionName}-${shoppingList}-title`).textContent = `▽ ${sectionName}`
-            if (document.getElementById(`${sectionName}-${shoppingList}-items-list`).childNodes.length == 0) {
-                document.getElementById(`${sectionName}-${shoppingList}-items-list`).className = "disappear"
+            document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-title`).textContent = `▽ ${sectionName}`
+            if (document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-items-list`).childNodes.length == 0) {
+                document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-items-list`).className = "disappear"
             } else {
-                document.getElementById(`${sectionName}-${shoppingList}-items-list`).className = "a-shopping-list"
+                document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-items-list`).className = "a-shopping-list"
             }
         
-            if (document.getElementById(`${sectionName}-${shoppingList}-subsections`).childNodes.length == 0) {
-                document.getElementById(`${sectionName}-${shoppingList}-subsections`).className = "disappear"
+            if (document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-subsections`).childNodes.length == 0) {
+                document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-subsections`).className = "disappear"
             } else {
-                document.getElementById(`${sectionName}-${shoppingList}-subsections`).className = "indent-left"
+                document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-subsections`).className = "indent-left"
             }  
 
             openedSections[index][1] = true
 
         } else {
-            document.getElementById(`${sectionName}-${shoppingList}-title`).textContent = `▷ ${sectionName}`
-            document.getElementById(`${sectionName}-${shoppingList}-subsections`).className = "disappear"
-            document.getElementById(`${sectionName}-${shoppingList}-items-list`).className = "disappear"
+            document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-title`).textContent = `▷ ${sectionName}`
+            document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-subsections`).className = "disappear"
+            document.getElementById(`${sectionName}-${shoppingList}-${ogSectionValue}-items-list`).className = "disappear"
 
             openedSections[index][1] = false
         }
         toggleCounter++
     })
 
-    renderedSections.push([sectionName, `${sectionName}-${shoppingList}-items-list`, `${sectionName}-${shoppingList}-title`, `${sectionName}-${shoppingList}-subsections`])
-    return [sectionName, `${sectionName}-${shoppingList}-items-list`, `${sectionName}-${shoppingList}-title`, `${sectionName}-${shoppingList}-subsections`]
+    renderedSections.push([sectionName, `${sectionName}-${shoppingList}-${ogSectionValue}-items-list`, `${sectionName}-${shoppingList}-${ogSectionValue}-title`, `${sectionName}-${shoppingList}-${ogSectionValue}-subsections`])
+    return [sectionName, `${sectionName}-${shoppingList}-${ogSectionValue}-items-list`, `${sectionName}-${shoppingList}-${ogSectionValue}-title`, `${sectionName}-${shoppingList}-${ogSectionValue}-subsections`]
 }
 
 function appendItemToShoppingListEl(input) {
@@ -470,7 +470,7 @@ function appendItemToShoppingListEl(input) {
     } else {
         let found = false
         for (let i = 0; i < renderedSections.length; i++) {
-            if (renderedSections[i][0] == theDisplaySectionValues[0]) {
+            if (renderedSections[i][0] == theDisplaySectionValues[0] && renderedSections[i][1] == `${theDisplaySectionValues[0]}-${list}-${sectionValue}-items-list`) {
                 document.getElementById(`${renderedSections[i][1]}`).append(newEl)
                 found = true 
             }
